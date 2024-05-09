@@ -164,3 +164,4 @@ cython_debug/
 
 sdxl-cache/
 safety-cache/
+.cog/

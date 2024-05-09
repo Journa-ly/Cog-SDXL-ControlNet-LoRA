@@ -1,3 +1,6 @@
+# Configuration for Cog ⚙️
+# Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
+
 build:
   gpu: true
   cuda: "11.8"
@@ -9,12 +12,13 @@ build:
     - "libxext6"
     - "wget"
     - "curl"
-    - "azure-cli"  # Adding Azure CLI for handling downloads from Azure
   python_packages:
-    - "diffusers==0.21.4"
-    - "torch==2.0.1"
-    - "transformers==4.34.0"
-    - "invisible-watermark==0.2.0"
+    - "huggingface_hub[cli]>=0.23.0"
+    - "diffusers>=0.21.4"
+    - "tokenizers>=0.14.1"
+    - "torch>=2.0.1"
+    - "transformers>=4.34.0"
+    - "invisible-watermark>=0.2.0"
     - "accelerate==0.21.0"
     - "pandas==2.0.3"
     - "torchvision==0.15.2"
@@ -26,9 +30,19 @@ build:
     - "python-dotenv>=1.0.1"
 
   run:
+    - curl -sL https://aka.ms/InstallAzureCLIDeb | bash
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.0.3/pget" && chmod +x /usr/local/bin/pget
-    - wget google.com -O face_landmarker_v2_with_blendshapes.task -q https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
-    - source .env && az storage blob download --account-name $AZURE_ACCOUNT_URL --container-name $JOURNA_CONTAINER_NAME --name $JOURNA_BLOB_NAME --file $JOURNA_MODEL_LOCAL_PATH --sas-token $SAS_TOKEN
-    
+    - wget -O face_landmarker_v2_with_blendshapes.task -q "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+    - mkdir -p /tmp/journa
+    - command: . /run/secrets/env && az storage blob download --account-name $(echo $AZURE_ACCOUNT_URL | cut -d'/' -f3 | cut -d'.' -f1) --container-name $JOURNA_CONTAINER_NAME --name $JOURNA_BLOB_NAME --file $JOURNA_MODEL_LOCAL_PATH --sas-token $SAS_TOKEN
+      mounts:
+        - type: secret
+          id: env
+          target: /run/secrets/env
+            #- command: python hf_login_shim.py
+            #mounts:
+            #- type: secret
+            #id: hf_login
+            #target: hf_login_shim.py
 predict: "predict.py:Predictor"
 train: "train.py:train"

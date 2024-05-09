@@ -1,7 +1,7 @@
 import torch
 import os
 from dotenv import load_dotenv
-from azure.storage.blob import BlobServiceClient
+from huggingface_hub import login
 from diffusers import AutoencoderKL, DiffusionPipeline, ControlNetModel
 from diffusers.pipelines.stable_diffusion.safety_checker import (
     StableDiffusionSafetyChecker,
@@ -9,6 +9,7 @@ from diffusers.pipelines.stable_diffusion.safety_checker import (
 
 # Load environment variables from the .env file
 load_dotenv()
+login()
 
 CONTROL_CACHE = "control-cache"
 SDXL_MODEL_CACHE = "./sdxl-cache"

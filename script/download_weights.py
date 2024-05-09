@@ -94,4 +94,4 @@ controlnet = ControlNetModel.from_pretrained(
     "diffusers/controlnet-canny-sdxl-1.0",
     torch_dtype=torch.float16
 )
-controlnet.save_pretrained(CONTROL_CACHE)
+#controlnet.save_pretrained(CONTROL_CACHE)

@@ -1,6 +1,29 @@
 import argparse
 import os
 import shutil
+import logging
+from dotenv import load_dotenv
+from huggingface_hub import login
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
+# Load environment variables from the .env file
+load_dotenv()
+
+# Retrieve the token from the environment variables
+hf_token = os.getenv('HF_TOKEN')
+
+if not hf_token:
+    logging.error("HF_TOKEN is not set. Please ensure it's specified in your environment.")
+else:
+    try:
+        login(token=hf_token)
+        logging.info("Login succeeded")
+    except HfHubLoginError as e:
+        logging.error(f"Login failed: {e}")
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
 
 from transformers import (
     BlipForConditionalGeneration,
@@ -13,8 +36,6 @@ from transformers import (
 DEFAULT_BLIP = "Salesforce/blip-image-captioning-large"
 DEFAULT_CLIPSEG = "CIDAS/clipseg-rd64-refined"
 DEFAULT_SWINIR = "caidas/swin2SR-realworld-sr-x4-64-bsrgan-psnr"
-
-def upload(args):
     blip_processor = BlipProcessor.from_pretrained(DEFAULT_BLIP)
     blip_model = BlipForConditionalGeneration.from_pretrained(DEFAULT_BLIP)
 

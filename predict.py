@@ -36,8 +36,35 @@ from safetensors.torch import load_file
 from transformers import CLIPImageProcessor
 
 from dataset_and_utils import TokenEmbeddingsHandler
+import argparse
+import os
+import shutil
+import logging
+from dotenv import load_dotenv
+from huggingface_hub import login
 
-CONTROL_CACHE = "control-cache"
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
+# Load environment variables from the .env file
+load_dotenv()
+
+# Retrieve the token from the environment variables
+hf_token = os.getenv('HF_TOKEN')
+
+if not hf_token:
+    logging.error("HF_TOKEN is not set. Please ensure it's specified in your environment.")
+else:
+    try:
+        login(token=hf_token)
+        logging.info("Login succeeded")
+    except HfHubLoginError as e:
+        logging.error(f"Login failed: {e}")
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
+
+
+#CONTROL_CACHE = "control-cache"
 SDXL_MODEL_CACHE = "./sdxl-cache"
 REFINER_MODEL_CACHE = "./refiner-cache"
 SAFETY_CACHE = "./safety-cache"
@@ -184,9 +211,14 @@ class Predictor(BasePredictor):
             download_weights(SDXL_URL, SDXL_MODEL_CACHE)
 
         controlnet = ControlNetModel.from_pretrained(
-            CONTROL_CACHE,
-            torch_dtype=torch.float16,
-        )
+                "diffusers/controlnet-canny-sdxl-1.0",
+                torch_dtype=torch.float16
+                )
+
+        #controlnet = ControlNetModel.from_pretrained(
+        #    CONTROL_CACHE,
+        #    torch_dtype=torch.float16,
+        #)
 
         print("Loading SDXL Controlnet pipeline...")
         self.control_text2img_pipe = StableDiffusionXLControlNetPipeline.from_pretrained(
